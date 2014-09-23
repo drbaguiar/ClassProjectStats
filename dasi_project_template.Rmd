@@ -1,15 +1,29 @@
 ---
 title: "project title"
-date: "date"
 output:
   html_document:
     theme: cerulean
+  pdf_document: default
+date: "date"
 ---
 
 <!-- For more info on RMarkdown see http://rmarkdown.rstudio.com/ -->
 
-<!-- Enter the code required to load your data in the space below. The data will be loaded but the line of code won't show up in your write up (echo=FALSE) in order to save space-->
-```{r echo=FALSE}
+```{r, results='hide'}
+# Load the inference function
+source("http://bit.ly/dasi_inference")
+#Check for the data directory and data file. If the data file is not there, download it.
+if(!file.exists("data")){
+  dir.create("data")
+}
+
+if (!file.exists("./data/gss.Rdata")) {
+  data.url <- 'http://d396qusza40orc.cloudfront.net/statistics/project/gss.Rdata'
+  download.file(data.url, destfile = './data/gss.Rdata') 
+}
+load(url("http://bit.ly/dasi_gss_data"))
+#names(gss)
+ write.csv(gss, "./data/gss.csv")
 
 ```
 
@@ -21,11 +35,24 @@ Insert introduction here...
 
 ### Data:
 
-Insert data section here...
+```{r,echo=FALSE}
+#Prepare hisotgram and barplot
+hist(gss$educ)
+barplot(table(gss$xmarsex))
+boxplot(gss$educ)
+boxplot(gss$educ ~ gss$xmarsex)
+```
 
 ### Exploratory data analysis:
 
-Insert exploratory data analysis here...
+```{r}
+by (gss$educ, gss$xmarsex, summary, na.rm=1)
+by (gss$educ, gss$xmarsex, sd, na.rm=1)
+```
+
+
+
+
 
 ### Inference:
 

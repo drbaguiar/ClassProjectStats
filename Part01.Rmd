@@ -1,0 +1,11 @@
+---
+output: pdf_document
+---
+```{r, echo=FALSE,warning=FALSE,results='hide'}
+load(url("http://bit.ly/dasi_gss_data"))
+require(dplyr)
+```
+
+```{r}
+head(na.omit(select(gss,educ,xmarsex, na.rm=1)),35)
+```
