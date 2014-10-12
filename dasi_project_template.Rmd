@@ -1,10 +1,10 @@
 ---
-title: "project title"
+title: "DASI Course Project"
 output:
   html_document:
     theme: cerulean
   pdf_document: default
-date: "date"
+date: "October 2014"
 ---
 
 ### Introduction:
@@ -48,12 +48,16 @@ Exploratory analyasis of theses variables appear to indicate that a relationship
 
 Visual Displays of the Variables
 ```{r,echo=FALSE}
-#Prepare histogram and barplot
-par(mfrow = c(2, 2))
-hist(gss$educ, xlab="Years of Education")
+#Prepare histogram and barplots add red line with mean
+#par(mfrow = c(2, 2))
+hist(gss$educ, xlab="Years of Education", title="Histogram - Years of Education")
+abline(v=mean(gss$educ, na.rm="True"), col="Red")
+
 barplot(table(gss$xmarsex))
 boxplot(gss$educ)
+abline(h=mean(gss$educ, na.rm="True"), col="Red")
 boxplot(gss$educ ~ gss$xmarsex)
+abline(h=mean(gss$educ, na.rm="True"), col="Red")
 ```
 
 Numerical Summaries of the Variables
@@ -63,14 +67,16 @@ by (gss$educ, gss$xmarsex, sd, na.rm=1)
 ```
 
 ### Inference:
-
 ```{r}
 output <- aov(gss$educ~gss$xmarsex)
 summary(output)
+model.tables(output,"means")
 TukeyHSD(output)
+plot(TukeyHSD(output))
 par(mfrow = c(2, 2))
 plot(output)
 ```
+
 ### Conclusion:
 
 Insert conclusion here...
