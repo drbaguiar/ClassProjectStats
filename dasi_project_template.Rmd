@@ -7,57 +7,70 @@ output:
 date: "date"
 ---
 
-<!-- For more info on RMarkdown see http://rmarkdown.rstudio.com/ -->
-
-```{r, results='hide'}
-# Load the inference function
-source("http://bit.ly/dasi_inference")
-#Check for the data directory and data file. If the data file is not there, download it.
-if(!file.exists("data")){
-  dir.create("data")
-}
-
-if (!file.exists("./data/gss.Rdata")) {
-  data.url <- 'http://d396qusza40orc.cloudfront.net/statistics/project/gss.Rdata'
-  download.file(data.url, destfile = './data/gss.Rdata') 
-}
-load(url("http://bit.ly/dasi_gss_data"))
-#names(gss)
- write.csv(gss, "./data/gss.csv")
-
-```
-
-<!-- In the remainder of the document, add R code chunks as needed -->
-
 ### Introduction:
 
 Insert introduction here...
 
+Research Question: Is there a relationship between education level (highest year of school completed) and views about a married person having sexual relations with someone other than the marriage partner?
+
+Since 1972, the General Social Survey (GSS) has been monitoring societal change and studying the growing complexity of American society. The GSS aims to gather data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes; to examine the structure and functioning of society in general as well as the role played by relevant subgroups; to compare the United States to other societies in order to place American society in comparative perspective and develop cross-national models of human society; and to make high-quality data easily accessible to scholars, students, policy makers, and others, with minimal cost and waiting.
+
+GSS questions cover a diverse range of issues including national spending priorities, marijuana use, crime and punishment, race relations, quality of life, confidence in institutions, and sexual behavior.  This extract of the General Social Survey (GSS) Cumulative File 1972-2012 provides a sample of selected indicators in the GSS. Unlike the full General Social Survey Cumulative File, missing values have been removed from the responses and factor variables were created when appropriate to facilitate analysis using R. Other than the two modifications mentioned above, all data and coding come from the original dataset. 
+
+This is an observational study.  There was no attempt to manipulate variables. As a result, causation cannot be inferred from the data. 
+
 ### Data:
 
+Data for this analysis was collected by:
+
+Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012 [Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research, University of Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributors], 2013-09-11. Persistent URL: http://doi.org/10.3886/ICPSR34802.v1 
+
+```{r, results='hide'}
+#Check for the data directory and data file. If the data file is not there, download it.
+if(!file.exists("data")){
+  dir.create("data")
+  data.url <- 'http://d396qusza40orc.cloudfront.net/statistics/project/gss.csv'
+  download.file(data.url, destfile = './data/gss.csv') 
+}
+
+# read the data file
+gss <- read.table("./data/gss.csv", header = TRUE, sep =",")
+#names(gss)
+```
+
+### Exploratory data analysis:
+The variables of interest in this analysis are:
+
+educ (highest year of school completed)  Numeric.
+xmarsex (sex with person other than spouse) Categorical
+
+Exploratory analyasis of theses variables appear to indicate that a relationship between these variables does exist.
+
+Visual Displays of the Variables
 ```{r,echo=FALSE}
-#Prepare hisotgram and barplot
-hist(gss$educ)
+#Prepare histogram and barplot
+par(mfrow = c(2, 2))
+hist(gss$educ, xlab="Years of Education")
 barplot(table(gss$xmarsex))
 boxplot(gss$educ)
 boxplot(gss$educ ~ gss$xmarsex)
 ```
 
-### Exploratory data analysis:
-
+Numerical Summaries of the Variables
 ```{r}
 by (gss$educ, gss$xmarsex, summary, na.rm=1)
 by (gss$educ, gss$xmarsex, sd, na.rm=1)
 ```
 
-
-
-
-
 ### Inference:
 
-Insert inference section here...
-
+```{r}
+output <- aov(gss$educ~gss$xmarsex)
+summary(output)
+TukeyHSD(output)
+par(mfrow = c(2, 2))
+plot(output)
+```
 ### Conclusion:
 
 Insert conclusion here...
