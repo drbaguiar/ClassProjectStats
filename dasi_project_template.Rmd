@@ -24,6 +24,7 @@ Data for this analysis was collected by:
 Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012 [Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research, University of Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributors], 2013-09-11. Persistent URL: http://doi.org/10.3886/ICPSR34802.v1 
 
 ```{r, results='hide'}
+require("nortest")
 #Check for the data directory and data file. If the data file is not there, download it.
 if(!file.exists("data")){
   dir.create("data")
@@ -84,6 +85,18 @@ by (gss$educ, gss$xmarsex, sd)
 ### Inference:
 This section
 
+####One-Way ANOVA
+One-way analysis of variance (ANOVA) is a technique used to compare means of two or more samples using the F distribution. The ANOVA tests the null hypothesis that samples in two or more groups are drawn from populations with the same mean values. To do this, two estimates are made of the population variance. These estimates rely on various assumptions (see below). The ANOVA produces an F-statistic, the ratio of the variance calculated among the means to the variance within the samples. If the group means are drawn from populations with the same mean values, the variance between the group means should be lower than the variance of the samples. A higher ratio implies that the samples were drawn from populations with different mean values.
+
+ANOVA makes the following assumptions:
+
+Random sampling, or at the very least, random assignment to groups.
+Independence of scores on the response variable -- i.e., what you get from one subject should be in no way influenced by what you get from any of the others.
+Sampling from normal populations within each cell of the design.
+Homogeneity of variance -- the populations within each cell of the design should all have the same variance.
+
+The last two are assumptions are checked statistically.
+
 ####Testing For Homogeneity of Variance
 ```{r}
 bartlett.test(educ ~ xmarsex, data=gss)
@@ -92,10 +105,11 @@ The p-value is > .05, so we do not rehject the null hypothesis of equal group va
 
 ####Testing for Normality
 ```{r}
-#by(gss$educ, gss$xmarsex, shapiro.test)
+by(gss$educ, gss$xmarsex, ad.test)
+qqnorm(gss$educ)
+
 ```
 
-####One-Way ANOVA
 ```{r}
 output <- aov(gss$educ~gss$xmarsex)
 model.tables(output,"means")
