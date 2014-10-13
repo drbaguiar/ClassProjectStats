@@ -11,13 +11,11 @@ date: "October 2014"
 
 Insert introduction here...
 
-Research Question: Is there a relationship between education level (highest year of school completed) and views about a married person having sexual relations with someone other than the marriage partner?
+Research Question: Is there an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed)?
 
 Since 1972, the General Social Survey (GSS) has been monitoring societal change and studying the growing complexity of American society. The GSS aims to gather data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes; to examine the structure and functioning of society in general as well as the role played by relevant subgroups; to compare the United States to other societies in order to place American society in comparative perspective and develop cross-national models of human society; and to make high-quality data easily accessible to scholars, students, policy makers, and others, with minimal cost and waiting.
 
 GSS questions cover a diverse range of issues including national spending priorities, marijuana use, crime and punishment, race relations, quality of life, confidence in institutions, and sexual behavior.  This extract of the General Social Survey (GSS) Cumulative File 1972-2012 provides a sample of selected indicators in the GSS. Unlike the full General Social Survey Cumulative File, missing values have been removed from the responses and factor variables were created when appropriate to facilitate analysis using R. Other than the two modifications mentioned above, all data and coding come from the original dataset. 
-
-This is an observational study.  There was no attempt to manipulate variables. As a result, causation cannot be inferred from the data. 
 
 ### Data:
 
@@ -36,47 +34,90 @@ if(!file.exists("data")){
 # read the data file
 gss <- read.table("./data/gss.csv", header = TRUE, sep =",")
 #names(gss)
+#remove all other variables except the 2 we will work with
+gss <- subset(gss, select=c("educ","xmarsex"))
+#Remove na's from the data
+gss <- na.omit(gss)
 ```
 
 ### Exploratory data analysis:
 The variables of interest in this analysis are:
 
 educ (highest year of school completed)  Numeric.
-xmarsex (sex with person other than spouse) Categorical
+xmarsex (sex with person other than spouse) Categorical.  This variable is coded as a factor with 4 levels ("Always Wrong" "Almost Always Wrong" Sometimes Wrong" "Not Wrong at All" ).
 
 Exploratory analyasis of theses variables appear to indicate that a relationship between these variables does exist.
 
-Visual Displays of the Variables
+####Visual Displays of the Variables
+#####Histogram (Vertical red line indicates mean)
 ```{r,echo=FALSE}
 #Prepare histogram and barplots add red line with mean
 #par(mfrow = c(2, 2))
-hist(gss$educ, xlab="Years of Education", title="Histogram - Years of Education")
-abline(v=mean(gss$educ, na.rm="True"), col="Red")
-
-barplot(table(gss$xmarsex))
-boxplot(gss$educ)
-abline(h=mean(gss$educ, na.rm="True"), col="Red")
-boxplot(gss$educ ~ gss$xmarsex)
-abline(h=mean(gss$educ, na.rm="True"), col="Red")
+hist(gss$educ, xlab="Years of Education", main="Histogram - Years of Education")
+abline(v=mean(gss$educ), col="Red")
 ```
 
-Numerical Summaries of the Variables
+#####Barplot
+```{r,echo=FALSE}
+barplot(table(gss$xmarsex), main="Extra Maritial Sex")
+```
+
+#####Boxplots (Horizental red line indicates mean)
+```{r,echo=FALSE}
+boxplot(gss$educ, main="Years of Education")
+abline(h=mean(gss$educ), col="Red")
+boxplot(gss$educ ~ gss$xmarsex, , main="Years of Education by Extra Maritial Sex")
+abline(h=mean(gss$educ), col="Red")
+```
+
+####Numerical Summaries of the Variables
+#####Five number summary of Years of Education by Extra Maritial Sex
 ```{r}
-by (gss$educ, gss$xmarsex, summary, na.rm=1)
-by (gss$educ, gss$xmarsex, sd, na.rm=1)
+by (gss$educ, gss$xmarsex, summary)
+```
+
+#####Standard Deviation of Years of Education by Extra Maritial Sex
+```{r}
+by (gss$educ, gss$xmarsex, sd)
 ```
 
 ### Inference:
+This section
+
+####Testing For Homogeneity of Variance
+```{r}
+bartlett.test(educ ~ xmarsex, data=gss)
+```
+The p-value is > .05, so we do not rehject the null hypothesis of equal group variances.
+
+####Testing for Normality
+```{r}
+#by(gss$educ, gss$xmarsex, shapiro.test)
+```
+
+####One-Way ANOVA
 ```{r}
 output <- aov(gss$educ~gss$xmarsex)
-summary(output)
 model.tables(output,"means")
-TukeyHSD(output)
-plot(TukeyHSD(output))
+summary(output)
 par(mfrow = c(2, 2))
 plot(output)
 ```
 
-### Conclusion:
+The p-value is < .05, so we reject the null hyopthesis of equal group means. We found evidence at least one group mean is different from the others.  In order to determine which group mean or means is (are) different, we conducgted post-hoc analaysis using the Tukey Honestly Significant Difference test 
 
-Insert conclusion here...
+####Post-Hoc Analysis
+The Tukey HSD procedure prints out the difference between means for each pair of groups, the lower and upper limits of a 95% confidence interval for that difference, and the p-value for the Tukey test.
+```{r}
+TukeyHSD(output)
+plot(TukeyHSD(output))
+```
+
+The p-value for the Tukey HSD test for the pair "Sometimes Wrong" - "Not Wrong At All"  was > .05; therfore, we do not reject the null hyopthesis of equal group means for this pair. The p-value for the Tukey HSD test for all other pairs was < .05; therfore, we  reject the null hyopthesis of equal group means for these pairs.
+
+
+### Conclusion:
+The results of the study indicated there is an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed).  This was an observational study; therefore, no attempt was made to manipulate variables. As a result, causation cannot be inferred from the results. 
+```{r}
+pairwise.t.test(gss$educ,gss$xmarsex,  p.adjust="bonferroni")
+```
