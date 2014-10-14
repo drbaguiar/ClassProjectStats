@@ -23,8 +23,10 @@ Data for this analysis was collected by:
 
 Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012 [Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research, University of Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributors], 2013-09-11. Persistent URL: http://doi.org/10.3886/ICPSR34802.v1 
 
-```{r, results='hide'}
+```{r, results='hide', warning=FALSE}
+# Load the required libraries
 require("nortest")
+require("lawstat")
 #Check for the data directory and data file. If the data file is not there, download it.
 if(!file.exists("data")){
   dir.create("data")
@@ -47,7 +49,7 @@ The variables of interest in this analysis are:
 educ (highest year of school completed)  Numeric.
 xmarsex (sex with person other than spouse) Categorical.  This variable is coded as a factor with 4 levels ("Always Wrong" "Almost Always Wrong" Sometimes Wrong" "Not Wrong at All" ).
 
-Exploratory analyasis of theses variables appear to indicate that a relationship between these variables does exist.
+Exploratory analysis of theses variables appear to indicate that a relationship between these variables does exist.
 
 ####Visual Displays of the Variables
 #####Histogram (Vertical red line indicates mean)
@@ -63,7 +65,7 @@ abline(v=mean(gss$educ), col="Red")
 barplot(table(gss$xmarsex), main="Extra Maritial Sex")
 ```
 
-#####Boxplots (Horizental red line indicates mean)
+#####Boxplots (Horizontal red line indicates grand mean)
 ```{r,echo=FALSE}
 boxplot(gss$educ, main="Years of Education")
 abline(h=mean(gss$educ), col="Red")
@@ -98,18 +100,22 @@ Homogeneity of variance -- the populations within each cell of the design should
 The last two are assumptions are checked statistically.
 
 ####Testing For Homogeneity of Variance
+Bartlett's test is used to test if k samples are from populations with equal variances. Equal variances across samples is called homoscedasticity or homogeneity of variances. Bartlett's test is used to test the null hypothesis that all k population variances are equal against the alternative that at least two are different.
 ```{r}
 bartlett.test(educ ~ xmarsex, data=gss)
 ```
-The p-value is > .05, so we do not rehject the null hypothesis of equal group variances.
+The p-value is > .05, so we do not reject the null hypothesis of equal group variances.
 
 ####Testing for Normality
+The Anderson-Darling test is a statistical test of whether a given sample of data is drawn from a given probability distribution. When testing for normality, the null hypothesis is that the data are normally distributed; the alternative hypothesis is that the data are non-normal; therefore, if the p-value is less than a chosen alpha, then reject the null hypothesis that the data come from that distribution.  
 ```{r}
 by(gss$educ, gss$xmarsex, ad.test)
 qqnorm(gss$educ)
-
 ```
 
+Because the p-value < .05, we reject the null hypothesis of normality.  If there are a great many data points, which is the case in this study, the normality test may detect statistically significant but trivial departures from normality that will have no real effect on the F statistic.  The one-way ANOVA is considered a robust test against the normality assumption. This means that it tolerates violations to its normality assumption rather well. With fairly small, moderate, and large sample sizes, the test may yield reasonably accurate p values even when the normality assumption is violated.  Large sample sizes may be required to produce relatively valid p values if the population distributions are substantially not normal. As regards the normality of group data, the one-way ANOVA can tolerate data that is non-normal (skewed or kurtotic distributions) with only a small effect on the Type I error rate. 
+
+####One-Way ANOVA
 ```{r}
 output <- aov(gss$educ~gss$xmarsex)
 model.tables(output,"means")
@@ -118,20 +124,26 @@ par(mfrow = c(2, 2))
 plot(output)
 ```
 
-The p-value is < .05, so we reject the null hyopthesis of equal group means. We found evidence at least one group mean is different from the others.  In order to determine which group mean or means is (are) different, we conducgted post-hoc analaysis using the Tukey Honestly Significant Difference test 
+The p-value is < .05, so we reject the null hypothesis of equal group means. We found evidence at least one group mean is different from the others.  In order to determine which group mean or means is (are) different, we conducted post-hoc analysis using the Tukey Honestly Significant Difference test 
 
 ####Post-Hoc Analysis
-The Tukey HSD procedure prints out the difference between means for each pair of groups, the lower and upper limits of a 95% confidence interval for that difference, and the p-value for the Tukey test.
+Post hoc tests are designed for situations in which the researcher has already obtained
+a significant omnibus F-test with a factor that consists of three or more means and additional exploration of the differences among means is needed to provide specific information on which means are significantly different from each other.  The Tukey HSD procedure prints out the difference between means for each pair of groups, the lower and upper limits of a 95% confidence interval for that difference, and the p-value for the Tukey test.
 ```{r}
 TukeyHSD(output)
 plot(TukeyHSD(output))
+levene.test(gss$educ,gss$xmarsex)
 ```
 
-The p-value for the Tukey HSD test for the pair "Sometimes Wrong" - "Not Wrong At All"  was > .05; therfore, we do not reject the null hyopthesis of equal group means for this pair. The p-value for the Tukey HSD test for all other pairs was < .05; therfore, we  reject the null hyopthesis of equal group means for these pairs.
+The p-value for the Tukey HSD test for the pair "Sometimes Wrong" - "Not Wrong At All"  was > .05; therefore, we do not reject the null hypothesis of equal group means for this pair. The p-value for the Tukey HSD test for all other pairs was < .05; therefore, we  reject the null hypothesis of equal group means for these pairs.
 
+####One-Way ANOVA
+A nonparametric test is often used when the normality assummption of ANOVA fails.  The Kruskal-Wallis one-way analysis of variance by ranks is a non-parametric method for testing whether samples originate from the same distribution.  It is used for comparing two or more samples that are independent, and that may have different sample sizes, and extends the Mann-Whitney U test to more than two groups.  Since it is a non-parametric method, the Kruskal-Wallis test does not assume a normal distribution of the residuals, unlike the analogous one-way analysis of variance. 
+```{r}
+kruskal.test(count ~ spray, data=InsectSprays)
+```
+
+The p-value is < .05, so we reject the null hypothesis of equal group means. We found evidence at least one group mean is different from the others.
 
 ### Conclusion:
 The results of the study indicated there is an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed).  This was an observational study; therefore, no attempt was made to manipulate variables. As a result, causation cannot be inferred from the results. 
-```{r}
-pairwise.t.test(gss$educ,gss$xmarsex,  p.adjust="bonferroni")
-```
