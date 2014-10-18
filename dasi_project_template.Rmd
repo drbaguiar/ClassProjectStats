@@ -8,21 +8,23 @@ date: "October 2014"
 ---
 
 ### Introduction:
-
-Insert introduction here..
-
-Research Question: Is there an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed)?
-
 Since 1972, the General Social Survey (GSS) has been monitoring societal change and studying the growing complexity of American society. The GSS aims to gather data on contemporary American society in order to monitor and explain trends and constants in attitudes, behaviors, and attributes; to examine the structure and functioning of society in general as well as the role played by relevant subgroups; to compare the United States to other societies in order to place American society in comparative perspective and develop cross-national models of human society; and to make high-quality data easily accessible to scholars, students, policy makers, and others, with minimal cost and waiting.
 
 GSS questions cover a diverse range of issues including national spending priorities, marijuana use, crime and punishment, race relations, quality of life, confidence in institutions, and sexual behavior.  This extract of the General Social Survey (GSS) Cumulative File 1972-2012 provides a sample of selected indicators in the GSS. Unlike the full General Social Survey Cumulative File, missing values have been removed from the responses and factor variables were created when appropriate to facilitate analysis using R. Other than the two modifications mentioned above, all data and coding come from the original dataset. 
 
-### Data:
+Research Question: Is there an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed)?
 
+### Data:
 Data for this analysis was collected by:
 
 Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012 [Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research, University of Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research [distributors], 2013-09-11. Persistent URL: http://doi.org/10.3886/ICPSR34802.v1 
 
+The data consists of 57,061 observations with 115 variables.  Each observation represents an individual who participated in the survey.  The two variables of interest in this observational analysis are:
+
+educ (highest year of school completed)  Numeric.
+xmarsex (sex with person other than spouse) Categorical.  This variable is coded as a factor with 4 levels ("Always Wrong" "Almost Always Wrong" Sometimes Wrong" "Not Wrong at All" ).
+
+N/A responses were removed from the data before analysis.  The final number of observations in this study was 33.939.  Because this study is observational, causation cannot be established.  The population of interest is all non institutionalized, English and Spanish speaking persons 18 years of age or older, living in the United States.  Based on the sampling procedures described by Smith, Tom W., Michael Hout, and Peter V. Marsden, the results are generalizable to the population of interest.
 ```{r, results='hide', warning=FALSE}
 # Load the required libraries
 require("nortest")
@@ -44,15 +46,10 @@ gss <- na.omit(gss)
 ```
 
 ### Exploratory data analysis:
-The variables of interest in this analysis are:
-
-educ (highest year of school completed)  Numeric.
-xmarsex (sex with person other than spouse) Categorical.  This variable is coded as a factor with 4 levels ("Always Wrong" "Almost Always Wrong" Sometimes Wrong" "Not Wrong at All" ).
-
-Exploratory analysis of theses variables appear to indicate that a relationship between these variables does exist.
+Exploratory data analysis was performed using a histogram of the Years of Education variable, bar plots of the view of extra marital sex variable, box plots combining the two variables, and the 5 number numerical summary.
 
 ####Visual Displays of the Variables
-#####Histogram (Vertical red line indicates mean)
+#####Histogram (Vertical red line indicates grand mean)
 ```{r,echo=FALSE}
 #Prepare histogram and barplots add red line with mean
 #par(mfrow = c(2, 2))
@@ -60,10 +57,14 @@ hist(gss$educ, xlab="Years of Education", main="Histogram - Years of Education")
 abline(v=mean(gss$educ), col="Red")
 ```
 
+Years of education are not normally distributed.  The histogram indicates a left skewed distribution.  
+
 #####Barplot
 ```{r,echo=FALSE}
 barplot(table(gss$xmarsex), main="Extra Maritial Sex")
 ```
+
+The "Aways Wrong" response is the most common response.
 
 #####Boxplots (Horizontal red line indicates grand mean)
 ```{r,echo=FALSE}
@@ -73,22 +74,21 @@ boxplot(gss$educ ~ gss$xmarsex, , main="Years of Education by Extra Maritial Sex
 abline(h=mean(gss$educ), col="Red")
 ```
 
+There are differences in the median Years of Education when factored by the Extra Martial Sex variables.
+
 ####Numerical Summaries of the Variables
 #####Five number summary of Years of Education by Extra Maritial Sex
 ```{r}
 by (gss$educ, gss$xmarsex, summary)
 ```
 
-#####Standard Deviation of Years of Education by Extra Maritial Sex
-```{r}
-by (gss$educ, gss$xmarsex, sd)
-```
+Exploratory analysis of theses variables appear to indicate that a relationship between these variables does exist.
 
 ### Inference:
-This section
+One-way analysis of variance (ANOVA) was chosen to analyze the variables in this study.  ANOVA is a technique used to compare means of two or more samples using the F distribution. The ANOVA will be used to test the null hypothesis that responses to the material sex variable are drawn from populations with the same mean value of the years of education variable. The alternative hypothesis is that at least on category has a mean that is different. 
 
 ####One-Way ANOVA
-One-way analysis of variance (ANOVA) is a technique used to compare means of two or more samples using the F distribution. The ANOVA tests the null hypothesis that samples in two or more groups are drawn from populations with the same mean values. To do this, two estimates are made of the population variance. These estimates rely on various assumptions (see below). The ANOVA produces an F-statistic, the ratio of the variance calculated among the means to the variance within the samples. If the group means are drawn from populations with the same mean values, the variance between the group means should be lower than the variance of the samples. A higher ratio implies that the samples were drawn from populations with different mean values.
+The ANOVA produces an F-statistic, the ratio of the variance calculated among the means to the variance within the samples. If the group means are drawn from populations with the same mean values, the variance between the group means should be lower than the variance of the samples. A higher ratio implies that the samples were drawn from populations with different mean values.
 
 ANOVA makes the following assumptions:
 
@@ -97,7 +97,7 @@ Independence of scores on the response variable -- i.e., what you get from one s
 Sampling from normal populations within each cell of the design.
 Homogeneity of variance -- the populations within each cell of the design should all have the same variance.
 
-The last two are assumptions are checked statistically.
+The last two are assumptions will be checked statistically before the ANOVA.
 
 ####Testing For Homogeneity of Variance
 Bartlett's test is used to test if k samples are from populations with equal variances. Equal variances across samples is called homoscedasticity or homogeneity of variances. Bartlett's test is used to test the null hypothesis that all k population variances are equal against the alternative that at least two are different.
@@ -111,7 +111,7 @@ The Anderson-Darling test is a statistical test of whether a given sample of dat
 ```{r}
 by(gss$educ, gss$xmarsex, ad.test)
 qqnorm(gss$educ)
-qqline(gss$educ, col="red
+qqline(gss$educ, col="red")
 ```
 
 Because the p-value < .05, we reject the null hypothesis of normality.  If there are a great many data points, which is the case in this study, the normality test may detect statistically significant but trivial departures from normality that will have no real effect on the F statistic.  The one-way ANOVA is considered a robust test against the normality assumption. This means that it tolerates violations to its normality assumption rather well. With fairly small, moderate, and large sample sizes, the test may yield reasonably accurate p values even when the normality assumption is violated.  Large sample sizes may be required to produce relatively valid p values if the population distributions are substantially not normal. As regards the normality of group data, the one-way ANOVA can tolerate data that is non-normal (skewed or kurtotic distributions) with only a small effect on the Type I error rate. 
@@ -133,18 +133,16 @@ a significant omnibus F-test with a factor that consists of three or more means 
 ```{r}
 TukeyHSD(output)
 plot(TukeyHSD(output))
-levene.test(gss$educ,gss$xmarsex)
 ```
 
 The p-value for the Tukey HSD test for the pair "Sometimes Wrong" - "Not Wrong At All"  was > .05; therefore, we do not reject the null hypothesis of equal group means for this pair. The p-value for the Tukey HSD test for all other pairs was < .05; therefore, we  reject the null hypothesis of equal group means for these pairs.
 
-####One-Way ANOVA
-A nonparametric test is often used when the normality assummption of ANOVA fails.  The Kruskal-Wallis one-way analysis of variance by ranks is a non-parametric method for testing whether samples originate from the same distribution.  It is used for comparing two or more samples that are independent, and that may have different sample sizes, and extends the Mann-Whitney U test to more than two groups.  Since it is a non-parametric method, the Kruskal-Wallis test does not assume a normal distribution of the residuals, unlike the analogous one-way analysis of variance. 
-```{r}
-kruskal.test(count ~ spray, data=InsectSprays)
-```
-
-The p-value is < .05, so we reject the null hypothesis of equal group means. We found evidence at least one group mean is different from the others.
-
 ### Conclusion:
 The results of the study indicated there is an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed).  This was an observational study; therefore, no attempt was made to manipulate variables. As a result, causation cannot be inferred from the results. 
+
+Appendix
+--------
+One page of data:
+```{r}
+head(gss,35)
+```
