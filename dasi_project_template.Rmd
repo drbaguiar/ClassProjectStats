@@ -9,7 +9,7 @@ date: "October 2014"
 
 ### Introduction:
 
-Insert introduction here...
+Insert introduction here..
 
 Research Question: Is there an association between views about a married person having sexual relations with someone other than the marriage partner and education level (highest year of school completed)?
 
@@ -111,6 +111,7 @@ The Anderson-Darling test is a statistical test of whether a given sample of dat
 ```{r}
 by(gss$educ, gss$xmarsex, ad.test)
 qqnorm(gss$educ)
+qqline(gss$educ, col="red
 ```
 
 Because the p-value < .05, we reject the null hypothesis of normality.  If there are a great many data points, which is the case in this study, the normality test may detect statistically significant but trivial departures from normality that will have no real effect on the F statistic.  The one-way ANOVA is considered a robust test against the normality assumption. This means that it tolerates violations to its normality assumption rather well. With fairly small, moderate, and large sample sizes, the test may yield reasonably accurate p values even when the normality assumption is violated.  Large sample sizes may be required to produce relatively valid p values if the population distributions are substantially not normal. As regards the normality of group data, the one-way ANOVA can tolerate data that is non-normal (skewed or kurtotic distributions) with only a small effect on the Type I error rate. 
