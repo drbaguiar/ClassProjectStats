@@ -30,14 +30,14 @@ N/A responses were removed from the data before analysis.  The final number of o
 require("nortest")
 require("lawstat")
 #Check for the data directory and data file. If the data file is not there, download it.
-if(!file.exists("data")){
-  dir.create("data")
+if(!file.exists("C:/Users/bryan_000/Documents/GitHub/Data/data")){
+  dir.create("C:/Users/bryan_000/Documents/GitHub/Data/data")
   data.url <- 'http://d396qusza40orc.cloudfront.net/statistics/project/gss.csv'
-  download.file(data.url, destfile = './data/gss.csv') 
+  download.file(data.url, destfile = 'C:/Users/bryan_000/Documents/GitHub/Data/data/gss.csv') 
 }
 
 # read the data file
-gss <- read.table("./data/gss.csv", header = TRUE, sep =",")
+gss <- read.table("C:/Users/bryan_000/Documents/GitHub/Data/data/gss.csv", header = TRUE, sep =",")
 #names(gss)
 #remove all other variables except the 2 we will work with
 gss <- subset(gss, select=c("educ","xmarsex"))
