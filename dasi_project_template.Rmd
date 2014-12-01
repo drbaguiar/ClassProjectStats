@@ -26,20 +26,25 @@ xmarsex (sex with person other than spouse) Categorical.  This variable is coded
 
 N/A responses were removed from the data before analysis.  The final number of observations in this study was 33.939.  Because this study is observational, causation cannot be established.  The population of interest is all non institutionalized, English and Spanish speaking persons 18 years of age or older, living in the United States.  Based on the sampling procedures described by Smith, Tom W., Michael Hout, and Peter V. Marsden, the results are generalizable to the population of interest.
 ```{r, results='hide', warning=FALSE}
+##Use my standard openning including call function
+source('C:/Users/bryan_000/Documents/GitHub/MyWork/StdOpen.R')
+
 # Load the required libraries
-require("nortest")
-require("lawstat")
-##Set working directory to data directory
-setwd('C:/Users/bryan_000/Documents/GitHub/Data/')
+call("nortest")
+call("lawstat")
+
+##Set data directory and file
+datafile <-paste(datadir,"remp7206.zip",sep = "")
+
 #Check for the data directory and data file. If the data file is not there, download it.
-if(!file.exists("data")){
-  dir.create("data")
-  data.url <- 'http://d396qusza40orc.cloudfront.net/statistics/project/gss.csv'
-  download.file(data.url, destfile = 'data/gss.csv') 
+if(!file.exists(datafile)){
+  data.url <- 'http://www.hofroe.net/stat557/GSS%20data%20csv/GSS%20data%20csv.zip'
+  download.file(data.url, destfile = datafile) 
+  unzip(datafile)
 }
 
 # read the data file
-gss <- read.table("data/gss.csv", header = TRUE, sep =",")
+gss <- read.table(datafile, header = TRUE, sep =",")
 #names(gss)
 #remove all other variables except the 2 we will work with
 gss <- subset(gss, select=c("educ","xmarsex"))
